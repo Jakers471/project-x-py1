@@ -888,12 +888,10 @@ class TradingSuite:
                     subscribe_to_quotes=True,
                 )
 
-        # Initialize all contexts in parallel
-        tasks = [
-            _initialize_single_context(context)
-            for context in self._instruments.values()
-        ]
-        await asyncio.gather(*tasks)
+        # Initialize contexts sequentially with delay to avoid SignalR overload
+      for context in self._instruments.values():
+          await _initialize_single_context(context)
+          await asyncio.sleep(0.3)  # 300ms delay between instruments
 
         # Update statistics aggregator with components
         if self._is_single_instrument and self._single_context:
